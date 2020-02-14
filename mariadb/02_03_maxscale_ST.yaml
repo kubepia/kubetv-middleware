@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: maxscale
+  labels:
+    app: maxscale
+spec:
+  serviceName: maxscale
+  selector:
+    matchLabels:
+      app: maxscale
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: maxscale
+    spec:
+      containers:
+      - name: maxscale
+        image: mariadb/maxscale:2.4.2-0
+        command:
+        - bash
+        - /mnt/config-template/start-maxscale-instance.sh
+        ports:
+        - name: read-write
+          containerPort: 4006
+        - name: read-only
+          containerPort: 4008
+        - name: rest-api
+          containerPort: 8989
+        volumeMounts:
+        - name: mariadb-config-vol
+          mountPath: /mnt/config-map
+        - name: start-maxscale
+          mountPath: /mnt/config-template
+      volumes:
+      - name: mariadb-config-vol
+        emptyDir: {}
+      - name: start-maxscale
+        configMap:
+          name: mariadb-maxscale-config

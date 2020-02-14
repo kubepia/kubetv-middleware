@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb
+  labels:
+    app: mariadb
+spec:
+  serviceName: mariadb-svc
+  selector:
+    matchLabels:
+      app: mariadb
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+      - name: mariadb
+        image: mariadb:10.4.8
+        command:
+        - bash
+        - /mnt/config-map/start-mariadb.sh
+        env:
+        # 本番環境ではパスワードはSecretにすること
+        - name: MYSQL_ROOT_PASSWORD
+          value: "root"
+        ports:
+        - name: mariadb
+          containerPort: 3306
+        volumeMounts:
+        # - name: mariadb
+        #   mountPath: /etc/mysql/conf.d/my.cnf
+        #   subPath: my.cnf
+        - name: mariadb-sql
+          mountPath: /mnt/config-map
+        - name: mariadb-entrypoint-vol
+          mountPath: /docker-entrypoint-initdb.d
+        - name: data
+          mountPath: /var/lib/mysql
+          subPath: mysql
+        livenessProbe:
+          exec:
+            command:
+            - /bin/bash
+            - -ec
+            - >-
+              mysqladmin -h localhost --user=root --password=${MYSQL_ROOT_PASSWORD} ping
+          initialDelaySeconds: 5
+          periodSeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            - /bin/bash
+            - -ec
+            - >-
+              mysql -h localhost --user=root --password=${MYSQL_ROOT_PASSWORD} -e "SELECT 1"
+          initialDelaySeconds: 5
+          periodSeconds: 30
+          timeoutSeconds: 5
+      volumes:
+      - name: mariadb
+        configMap:
+          name: mariadb-config
+      - name: mariadb-sql
+        configMap:
+          name: mariadb-config
+      # データディレクトリは本番環境はemptyDir以外にすること(hostPath、NFSなど)
+      - name: data
+        emptyDir: {}
+      - name: mariadb-entrypoint-vol
+        emptyDir: {}
