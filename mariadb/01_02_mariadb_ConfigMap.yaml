@@ -23,7 +23,7 @@ data:
     STOP SLAVE;
     SET GLOBAL gtid_slave_pos='0-3000-0';
     CHANGE MASTER TO 
-        MASTER_HOST='mariadb-0.mariadb-svc.mariadb-dev.svc.cluster.local', 
+        MASTER_HOST='mariadb-0.mariadb-svc.dev-mariadb.svc.cluster.local', 
         MASTER_PORT=3306, 
         MASTER_USER='maxuser', 
         MASTER_PASSWORD='maxpwd',

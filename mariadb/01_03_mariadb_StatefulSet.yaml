@@ -66,8 +66,18 @@ spec:
       - name: mariadb-sql
         configMap:
           name: mariadb-config
-      # データディレクトリは本番環境はemptyDir以外にすること(hostPath、NFSなど)
-      - name: data
-        emptyDir: {}
-      - name: mariadb-entrypoint-vol
-        emptyDir: {}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 10Gi
+  - metadata:
+      name: mariadb-entrypoint-vol
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 1Gi
