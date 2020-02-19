@@ -12,19 +12,19 @@ data:
 
     [server1]
     type=server
-    address=mariadb-0.mariadb-svc.dev-mariadb.svc.cluster.local
+    address=mariadb-0.mariadb-svc.btv.svc.cluster.local
     port=3306
     protocol=mariadbbackend
 
     [server2]
     type=server
-    address=mariadb-1.mariadb-svc.dev-mariadb.svc.cluster.local
+    address=mariadb-1.mariadb-svc.btv.svc.cluster.local
     port=3306
     protocol=mariadbbackend
 
     [server3]
     type=server
-    address=mariadb-2.mariadb-svc.dev-mariadb.svc.cluster.local
+    address=mariadb-2.mariadb-svc.btv.svc.cluster.local
     port=3306
     protocol=mariadbbackend
 
