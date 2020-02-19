@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: redis
-        image: k8s.gcr.io/redis:v1
+        image: g3.skb:8500/external-image/redis:v1
         ports:
         - containerPort: 6333
         resources:

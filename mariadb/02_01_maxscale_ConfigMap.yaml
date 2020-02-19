@@ -33,9 +33,6 @@ data:
     # MySQL Monitor documentation:
     # https://github.com/mariadb-corporation/MaxScale/blob/2.3/Documentation/Monitors/MariaDB-Monitor.md
 
-    # replication_user と replication_password が未設定の場合、
-    # フェイルオーバー時に組まれるレプリケーションは
-     #user で設定された maxscale ユーザーでレプリケーションが組まれます
 
     [MariaDB-Monitor]
     type=monitor

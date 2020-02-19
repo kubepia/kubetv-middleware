@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: maxscale
-        image: mariadb/maxscale:2.4.2-0
+        image: g3.skb:8500/external-image/mariadb/maxscale:2.4.2-0
         command:
         - bash
         - /mnt/config-template/start-maxscale-instance.sh

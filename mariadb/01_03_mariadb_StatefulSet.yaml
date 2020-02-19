@@ -17,21 +17,17 @@ spec:
     spec:
       containers:
       - name: mariadb
-        image: mariadb:10.4.8
+        image: g3.skb:8500/external-image/mariadb:10.4.8
         command:
         - bash
         - /mnt/config-map/start-mariadb.sh
         env:
-        # 本番環境ではパスワードはSecretにすること
         - name: MYSQL_ROOT_PASSWORD
           value: "root"
         ports:
         - name: mariadb
           containerPort: 3306
         volumeMounts:
-        # - name: mariadb
-        #   mountPath: /etc/mysql/conf.d/my.cnf
-        #   subPath: my.cnf
         - name: mariadb-sql
           mountPath: /mnt/config-map
         - name: mariadb-entrypoint-vol
