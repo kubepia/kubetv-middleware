@@ -87,3 +87,18 @@ kind: ConfigMap
 metadata:
   name: nginx-conf
 ---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: bff-pv
+spec:
+  capacity:
+    storage: 8Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    path: /storage/content
+    server: infra
+    readOnly: false
+---
