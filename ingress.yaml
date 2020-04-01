@@ -2,10 +2,10 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: g3-ing
+  name: kubetv-ing
 spec:
   rules:
-    - host: g3.apps.kubepia.kr
+    - host: kubetv.192.168.64.21.nip.io
       http:
         paths:
           - backend:

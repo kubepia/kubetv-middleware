@@ -14,7 +14,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
         - name: mongo
-          image: g3.skb:8500/external-image/mongo:4.2
+          image: mongo:4.2
           command:
             - mongod
             - "--bind_ip"
@@ -32,10 +32,10 @@ spec:
             - name: MONGO_SIDECAR_POD_LABELS
               value: "role=mongo,environment=test"
   volumeClaimTemplates:
-  - metadata:
-      name: mongo-data
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: 10Gi
+    - metadata:
+        name: mongo-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi

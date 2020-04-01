@@ -16,64 +16,64 @@ spec:
         app: mariadb
     spec:
       containers:
-      - name: mariadb
-        image: g3.skb:8500/external-image/mariadb:10.4.8
-        command:
-        - bash
-        - /mnt/config-map/start-mariadb.sh
-        env:
-        - name: MYSQL_ROOT_PASSWORD
-          value: "root"
-        ports:
         - name: mariadb
-          containerPort: 3306
-        volumeMounts:
-        - name: mariadb-sql
-          mountPath: /mnt/config-map
-        - name: mariadb-entrypoint-vol
-          mountPath: /docker-entrypoint-initdb.d
-        - name: data
-          mountPath: /var/lib/mysql
-          subPath: mysql
-        livenessProbe:
-          exec:
-            command:
-            - /bin/bash
-            - -ec
-            - >-
-              mysqladmin -h localhost --user=root --password=${MYSQL_ROOT_PASSWORD} ping
-          initialDelaySeconds: 5
-          periodSeconds: 30
-          timeoutSeconds: 5
-        readinessProbe:
-          exec:
-            command:
-            - /bin/bash
-            - -ec
-            - >-
-              mysql -h localhost --user=root --password=${MYSQL_ROOT_PASSWORD} -e "SELECT 1"
-          initialDelaySeconds: 5
-          periodSeconds: 30
-          timeoutSeconds: 5
+          image: mariadb:10.4.8
+          command:
+            - bash
+            - /mnt/config-map/start-mariadb.sh
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "root"
+          ports:
+            - name: mariadb
+              containerPort: 3306
+          volumeMounts:
+            - name: mariadb-sql
+              mountPath: /mnt/config-map
+            - name: mariadb-entrypoint-vol
+              mountPath: /docker-entrypoint-initdb.d
+            - name: data
+              mountPath: /var/lib/mysql
+              subPath: mysql
+          livenessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - >-
+                  mysqladmin -h localhost --user=root --password=${MYSQL_ROOT_PASSWORD} ping
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - >-
+                  mysql -h localhost --user=root --password=${MYSQL_ROOT_PASSWORD} -e "SELECT 1"
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 5
       volumes:
-      - name: mariadb
-        configMap:
-          name: mariadb-config
-      - name: mariadb-sql
-        configMap:
-          name: mariadb-config
+        - name: mariadb
+          configMap:
+            name: mariadb-config
+        - name: mariadb-sql
+          configMap:
+            name: mariadb-config
   volumeClaimTemplates:
-  - metadata:
-      name: data
-    spec:
-      accessModes: ["ReadWriteOnce"]
-      resources:
-        requests:
-          storage: 10Gi
-  - metadata:
-      name: mariadb-entrypoint-vol
-    spec:
-      accessModes: ["ReadWriteOnce"]
-      resources:
-        requests:
-          storage: 1Gi
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+    - metadata:
+        name: mariadb-entrypoint-vol
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi

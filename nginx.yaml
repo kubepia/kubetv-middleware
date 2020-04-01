@@ -1,3 +1,61 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-cache-svc
+spec:
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: http
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-conf
+data:
+  nginx.conf: |
+    user  nginx;
+    worker_processes  1;
+    error_log  /var/log/nginx/error.log warn;
+    pid        /var/run/nginx.pid;
+    events {
+        worker_connections  1024;
+    }
+    http {
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+        log_format  main  '$remote_addr - $upstream_cache_status - $remote_user [$time_local] "$request" '
+                          '$status $body_bytes_sent "$http_referer" '
+                          '"$http_user_agent" "$http_x_forwarded_for"';
+        access_log  /var/log/nginx/access.log  main;
+        sendfile        on;
+        keepalive_timeout  65;
+        proxy_cache_path /nginx levels=1:2 keys_zone=my_zone:500m inactive=60m;
+        proxy_cache_key "$scheme$request_method$host$request_uri";
+        upstream bff-svc {
+            server bff-svc:3000;
+        }
+    server {
+        listen       80;
+        location / {
+            proxy_cache my_zone;
+            add_header X-Proxy-nginx $upstream_cache_status;
+            proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_pass http://bff-svc;
+        }
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   /usr/share/nginx/html;
+        }
+    }
+    }
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -5,7 +63,7 @@ metadata:
   labels:
     app: nginx
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: nginx
@@ -28,78 +86,3 @@ spec:
         - name: nginx-conf
           configMap:
             name: nginx-conf
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: nginx-cache-svc
-spec:
-  selector:
-    app: nginx
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: http
----
-apiVersion: v1
-data:
-  nginx.conf: |
-    user  nginx;
-    worker_processes  1;
-    error_log  /var/log/nginx/error.log warn;
-    pid        /var/run/nginx.pid;
-    events {
-        worker_connections  1024;
-    }
-    http {
-        include       /etc/nginx/mime.types;
-        default_type  application/octet-stream;
-        log_format  main  '$remote_addr - $upstream_cache_status - $remote_user [$time_local] "$request" '
-                          '$status $body_bytes_sent "$http_referer" '
-                          '"$http_user_agent" "$http_x_forwarded_for"';
-        access_log  /var/log/nginx/access.log  main;
-        sendfile        on;
-        keepalive_timeout  65;
-        proxy_cache_path /nginx levels=1:2 keys_zone=my_zone:500m inactive=60m;
-        proxy_cache_key "$scheme$request_method$host$request_uri";
-        upstream bff-svc {
-            server bff-svc.btv.svc.cluster.local:3000;
-        }
-    server {
-        listen       80;
-        location / {
-            proxy_cache my_zone;
-            add_header X-Proxy-nginx $upstream_cache_status;
-            proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
-            proxy_set_header Host $http_host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_pass http://bff-svc;
-        }
-        error_page   500 502 503 504  /50x.html;
-        location = /50x.html {
-            root   /usr/share/nginx/html;
-        }
-    }
-    }
-kind: ConfigMap
-metadata:
-  name: nginx-conf
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: bff-pv
-spec:
-  capacity:
-    storage: 5Gi
-  accessModes:
-    - ReadWriteMany
-  persistentVolumeReclaimPolicy: Retain
-  nfs:
-    path: /storage/content
-    server: infra
-    readOnly: false
----
-
