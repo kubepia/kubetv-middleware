@@ -5,7 +5,7 @@ metadata:
   name: kubetv-ing
 spec:
   rules:
-    - host: kubetv.192.168.64.21.nip.io
+    - host: kubetv.apps.hcp.darumtech.net
       http:
         paths:
           - backend:
